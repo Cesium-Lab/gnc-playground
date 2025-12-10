@@ -11,3 +11,4 @@ Part 1 of the journey
 5. Extras
    1. NMEA Parser
    2. TLE Parser
+   3. Cart pendulum system but showing natural frequency too
