@@ -58,13 +58,11 @@ class EKF:
         self.R = params.R
         self.I = np.eye(len(params.Q))
 
-    def predict(self, u: np.ndarray, params: dict = None):
+    def predict(self, u: np.ndarray) -> None:
         """Predicts state. Modifies member state and also returns it
 
         Args:
             u (np.ndarray): Input vector [Ux1]
-            params (dict): (Optional) Dict with extra parameters for f() and F()
-                (like params["dt"])
 
         Returns:
             State: predicted next state k+1 
@@ -73,16 +71,14 @@ class EKF:
         x,P = self.state.x, self.state.P
         Q = self.Q
 
-        x_next = self.f(x, u, params)
+        x_next = self.f(x, u)
 
-        F = self.F(x, u, params)
+        F = self.F(x, u)
         P_next = F @ P @ F.T + Q
 
         self.state = State(x_next, P_next)
-
-        return self.state
     
-    def update(self, z: np.ndarray, params: dict = None):
+    def update(self, z: np.ndarray) -> None:
         """Updates state. Modifies member state and also returns it
 
         Args:
@@ -97,9 +93,9 @@ class EKF:
         x_est, P_est= self.state.x, self.state.P
         R, I = self.R, self.I
 
-        H = self.H(x_est, params)
+        H = self.H(x_est)
 
-        y_err = z - self.h(x_est, params) # Measurement residual
+        y_err = z - self.h(x_est) # Measurement residual
         S = H @ P_est @ H.T + R # Innovation covariance
         K = P_est @ H.T @ np.linalg.pinv(S) # "near optimal" Kalman gain
         x_next = x_est + K @ y_err # Update state
@@ -108,8 +104,6 @@ class EKF:
         # P_next = (I - K@H) @ P_est 
 
         self.state = State(x_next, P_next)
-
-        return self.state
 
         
 
