@@ -44,8 +44,7 @@ class EKF:
     - `state`: np.ndarray (State [Nx1])
     """
     def __init__(self, state0: State, params: EkfParams):
-        """_summary_
-
+        """
         Args:
             state0 (State): Starting state
             params (EkfParams): Starting EKF Parameters
@@ -59,11 +58,13 @@ class EKF:
         self.R = params.R
         self.I = np.eye(len(params.Q))
 
-    def predict(self, u: np.ndarray):
+    def predict(self, u: np.ndarray, params: dict = None):
         """Predicts state. Modifies member state and also returns it
 
         Args:
             u (np.ndarray): Input vector [Ux1]
+            params (dict): (Optional) Dict with extra parameters for f() and F()
+                (like params["dt"])
 
         Returns:
             State: predicted next state k+1 
@@ -72,31 +73,33 @@ class EKF:
         x,P = self.state.x, self.state.P
         Q = self.Q
 
-        x_next = self.f(x, u)
+        x_next = self.f(x, u, params)
 
-        F = self.F(x, u)
+        F = self.F(x, u, params)
         P_next = F @ P @ F.T + Q
 
         self.state = State(x_next, P_next)
 
         return self.state
     
-    def update(self, z: np.ndarray):
+    def update(self, z: np.ndarray, params: dict = None):
         """Updates state. Modifies member state and also returns it
 
         Args:
             z (np.ndarray): Observation vector [Mx1]
+            params (dict): (Optional) Dict with extra parameters for f() and F()
+                (like params["dt"])
 
         Returns:
             State: final updated next state k+1 
         """
         # I like getting variables out at the beginning
         x_est, P_est= self.state.x, self.state.P
-        Q, R, I = self.Q, self.R, self.I
+        R, I = self.R, self.I
 
-        H = self.H(x_est)
+        H = self.H(x_est, params)
 
-        y_err = z - H @ x_est # Measurement residual
+        y_err = z - self.h(x_est, params) # Measurement residual
         S = H @ P_est @ H.T + R # Innovation covariance
         K = P_est @ H.T @ np.linalg.pinv(S) # "near optimal" Kalman gain
         x_next = x_est + K @ y_err # Update state
