@@ -205,8 +205,6 @@ def test_dcm_round_trip_consistency():
     for q in quats:
         dcm = Q.q_to_DCM(q)
         q2 = Q.DCM_to_q(dcm)
-        print(q)
-        print(q2)
         assert np.allclose(q2, q)
 
 class TestApply:
