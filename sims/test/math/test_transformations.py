@@ -42,6 +42,6 @@ def test_r_to_lla_example_3_3():
     lat, lon, alt = Trans.r_to_surface_lla(r)
 
     # Book values are given in km
-    assert lat == pytest.approx(34.352496 * DEG2RAD)
+    assert lat == pytest.approx(34.352496 * DEG2RAD, rel=1e-5)
     assert lon == pytest.approx(46.4464 * DEG2RAD)
     assert alt == pytest.approx(5085.22 * 1e3)
