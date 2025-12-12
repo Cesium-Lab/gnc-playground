@@ -2,7 +2,7 @@
 import numpy as np
 
 from ..world.bodies import R_EARTH, R_EARTH_POLAR, ECC_EARTH, W_EARTH
-from .constants import DEG2RAD, SEC_TO_DAY
+from .constants import DEG_TO_RAD, SEC_TO_DAY, ARCSEC_TO_DEG
 from .time import jd_to_julian_centuries
 ################################################################################
 #               LLA <--> ECEF 
@@ -21,8 +21,8 @@ def surface_lla_to_ecef(lat_deg: float, lon_deg: float, alt_m = 0):
         np.ndarray: Position vector (ECEF) [m]
     """
 
-    lat_gd = lat_deg * DEG2RAD
-    lon_gd = lon_deg * DEG2RAD
+    lat_gd = lat_deg * DEG_TO_RAD
+    lon_gd = lon_deg * DEG_TO_RAD
 
     sin_lat = np.sin(lat_gd)
     cos_lat = np.cos(lat_gd)
@@ -104,7 +104,7 @@ The crux of it is that `r_gcrs = [P(t)][N(t)][R(t)][W(t)] @ r_itrf` where:
 X_coeff = [-0.016617, 2004.191898, -0.4297829,
            -0.19861834, 0.000007578, 0.0000059285]
 Y_coeff = [-0.006951, -0.025896, -22.407274,
-           0.00190059, 0.001112526, 0.0000001258]
+           0.00190059, 0.001112526, 0.0000001358]
 s_XY_2_coeff = [0.000094, 0.00380865, -0.00012268,
                 -0.07257411, 0.00002798, 0.00001562]
 
@@ -165,7 +165,7 @@ def W_matrix(xp: float, yp: float, t_tt: float):
     """
     # Coefficient varies by less than 0.0004" over next century
     # Vallado 4e 3-61 p. 212
-    s = -0.000047 * t_tt * DEG2RAD
+    s = -0.000047 * t_tt * DEG_TO_RAD
     cs = np.cos(s)
     ss = np.sin(s)
 
@@ -221,9 +221,9 @@ def PN_matrix(t_tt: float, dX = 0.0, dY = 0.0):
 
     # CIP unit vector X,Y and angle between CIO and GCRS equator s
     # Found using 5th degree spline (Vallado 4e p. 214-215)
-    X = approx_5th_deg_spline(t_tt, X_coeff) + dX
-    Y = approx_5th_deg_spline(t_tt, Y_coeff) + dY
-    s = -X*Y/2 + approx_5th_deg_spline(t_tt, s_XY_2_coeff)
+    X = ARCSEC_TO_DEG * (approx_5th_deg_spline(t_tt, X_coeff) + dX)
+    Y = ARCSEC_TO_DEG * (approx_5th_deg_spline(t_tt, Y_coeff) + dY)
+    s = ARCSEC_TO_DEG * (-X*Y/2 + approx_5th_deg_spline(t_tt, s_XY_2_coeff))
     
     # Vallado 4e p. 213 approximation
     a = 1/2 + 1/8*(X*X + Y*Y)
@@ -233,6 +233,10 @@ def PN_matrix(t_tt: float, dX = 0.0, dY = 0.0):
         [-a*X*Y, 1-a*Y*Y, Y],
         [-X, -Y, 1-a*(X*X + Y*Y)]
     ])
+    print(mat)
+
+
+    print(np.linalg.det(mat))
 
     Cs = np.cos(s)
     Ss = np.sin(s)
@@ -245,35 +249,46 @@ def PN_matrix(t_tt: float, dX = 0.0, dY = 0.0):
 
     return mat @ rot3_s
 
-def itrf_to_gcrs_matrix(xp: float, yp: float, utc_s: float,
-                        deltaAT: float, deltaUT1: float):
-                #  t_tt: float, jd_ut1: float):
+def itrf_to_gcrs_matrix(xp: float, yp: float, jd_utc: float,
+                        deltaAT_s: float, deltaUT1_s: float,
+                        dX: float, dY: float):
     """Generates current matrix from ITRF <--> GCRS. 
     Precalculate jd_ut1 and t_tt from 
     Obtain xp, yp, deltaUT, dX, and dY from EOP data
     Vallado 4e 3-57
 
     Args:
-        xp (float): Polar x coord. of polar motion of CIP in ITRS
-        yp (float): Polar y coord. of polar motion of CIP in ITRS
-        # t_tt (float): Julian century (Terrestrial time)
-        # jd_ut1 (float): Julian date (UT1)
+        xp (float): Polar x coord. of polar motion of CIP in ITRS [rad]
+        yp (float): Polar y coord. of polar motion of CIP in ITRS [rad]
+        jd_utc (float): Julian date (UTC)
+        deltaAT_s (float): UTC to TAI offset [s]
+        deltaUT1_s (float): UTC to UT1 offset [s]
+        dX (float): X correction (from EOP)
+        dY (float): Y correction (from EOP)
 
     Returns:
         np.ndarray: PNRW Rotation matrix such that r_GCRS = PNRW * r_ITRF
     """
+    
+    jd_ut1 = jd_utc + deltaUT1_s * SEC_TO_DAY
+    jd_tai = jd_utc + deltaAT_s * SEC_TO_DAY
+    jd_tt = jd_tai + 32.184 * SEC_TO_DAY
+    t_tt = jd_to_julian_centuries(jd_tt)
 
-    ut1 = utc_s + deltaUT1
-    tai = utc_s + deltaAT
-    tt = tai + 32.184
+    print(t_tt)
     # jd_tt 
 
     # UT1 - TAI = dUT1 - dAT
 
     
     W = W_matrix(xp, yp, t_tt)
+    print(f"{W=}")
+    print()
     R = R_matrix(jd_ut1)
+    print(f"{R=}")
+    print()
     PN = PN_matrix(t_tt, dX, dY)
+    print(f"{PN=}")
 
     PNRW = PN @ R @ W
 

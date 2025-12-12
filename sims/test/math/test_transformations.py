@@ -5,8 +5,8 @@ import pytest
 sys.path.append(".")
 
 import csim.math.transformations as Trans
-from csim.math.constants import DEG2RAD
-
+from csim.math.constants import DEG_TO_RAD
+from csim.math.time import greg_to_jd
 def test_lla_to_r_example_3_1():
     """Vallado 4e Example 3.1 (p. 141)"""
     lat_geodetic = 39.586667
@@ -20,7 +20,7 @@ def test_lla_to_r_example_3_1():
     # Book values are given in km
     assert r_horizontal == pytest.approx(4925.4298026 * 1e3) # m
     assert r_vert == pytest.approx(4045.4937426 * 1e3) # m
-    assert np.arctan(r[1] / r[0]) == pytest.approx(DEG2RAD * (lon_geodetic + 180))
+    assert np.arctan(r[1] / r[0]) == pytest.approx(DEG_TO_RAD * (lon_geodetic + 180))
 
 def test_lla_to_r_example_3_2():
     """Vallado 4e Example 3.2 (p. 144)"""
@@ -42,6 +42,52 @@ def test_r_to_lla_example_3_3():
     lat, lon, alt = Trans.r_to_surface_lla(r)
 
     # Book values are given in km
-    assert lat == pytest.approx(34.352496 * DEG2RAD, rel=1e-5)
-    assert lon == pytest.approx(46.4464 * DEG2RAD)
+    assert lat == pytest.approx(34.352496 * DEG_TO_RAD, rel=1e-5)
+    assert lon == pytest.approx(46.4464 * DEG_TO_RAD)
     assert alt == pytest.approx(5085.22 * 1e3)
+
+def test_vallado_itrf_W():
+    """ Tests that determinant is 1. \\
+        Vallado 4e Example 3-15 p. 230"""
+    t_tt = 0.0426236319
+    xp = -0.140682 * DEG_TO_RAD
+    yp = 0.333309 * DEG_TO_RAD
+
+    W = Trans.W_matrix(xp, yp, t_tt)
+
+    assert np.linalg.det(W) == pytest.approx(1, 1e-9)
+
+def test_vallado_itrf_R():
+    """ Tests that determinant is 1. \\
+        Vallado 4e Example 3-15 p. 230"""
+
+    jd_ut1 = greg_to_jd(2004, 4, 6, 7, 51, 27.946047)
+    
+    R = Trans.R_matrix(jd_ut1)
+
+    assert np.linalg.det(R) == pytest.approx(1, 1e-9)
+
+def test_vallado_itrf_PN():
+    """ Tests that determinant is 1. \\
+        Vallado 4e Example 3-15 p. 230"""
+
+    t_tt = 0.0426236319
+    
+    PN = Trans.PN_matrix(t_tt, 0, 0)
+
+    assert np.linalg.det(PN) == pytest.approx(1, 1e-9)
+
+# def test_vallado_full_itrf():
+#     # Book values are given in km
+#     r_itrf = np.array([-1033.479383, 7901.2952754, 6380.3565958]) * 1000
+
+#     jd = greg_to_jd(2004, 4, 6, 7, 51, 28.386)
+
+#     xp = -0.140682 * DEG_TO_RAD
+#     yp = 0.333309 * DEG_TO_RAD
+#     dAT = 32
+#     dUT1 = 0.4399619
+
+#     M = Trans.itrf_to_gcrs_matrix(xp, yp, jd, dAT, dUT1, 0, 0)
+
+#     print(M @ r_itrf)
