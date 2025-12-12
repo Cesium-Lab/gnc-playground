@@ -1,7 +1,8 @@
+#  ruff: noqa: E741
 # Energy sanity checks
 import numpy as np
 
-def calc_potential_energy(mass_kg: float, r: np.ndarray, mu: float):
+def calc_potential_energy(r: np.ndarray, mass_kg: float, mu: float):
     """Compute potential energy (currently only gravity). (Schaub 9.76)
 
     Args:
@@ -13,8 +14,6 @@ def calc_potential_energy(mass_kg: float, r: np.ndarray, mu: float):
         float: Potential energy [J]
     """
     r_norm = np.linalg.norm(r)
-
-    print(r_norm)
 
     if r_norm < 1e-6:
         return 0
@@ -33,10 +32,8 @@ def calc_kinetic_energy(v: np.ndarray, w: np.ndarray, mass_kg: np.ndarray, I: np
     Returns:
         float: Kinetic energy [J]
     """
-    v_norm = np.linalg.norm(v)
-    w = np.asarray(w)
 
-    KE_translational = 0.5 * mass_kg * v_norm * v_norm 
+    KE_translational = 0.5 * mass_kg * np.dot(v,v)
     KE_rotational = 0.5 * (w.T @ I @ w)
 
     return KE_rotational + KE_translational
@@ -56,6 +53,6 @@ def calc_total_energy(mass_kg: float, I: np.ndarray, r: np.ndarray | list,
     Returns:
         float: Total energy [J]
     """
-    print(calc_potential_energy(r, mass_kg, mu))
-    print(calc_kinetic_energy(v, w, mass_kg, I))
-    return calc_potential_energy(r, mass_kg, mu) + calc_kinetic_energy(v, w, mass_kg, I)
+    PE = calc_potential_energy(r, mass_kg, mu)
+    KE = calc_kinetic_energy(v, w, mass_kg, I)
+    return PE + KE

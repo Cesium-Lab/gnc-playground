@@ -1,17 +1,15 @@
 import numpy as np
 from numpy.linalg import norm
-from dataclasses import dataclass
 from .constants import RAD2DEG, DEG2RAD
 
 def unit(q: np.ndarray):
-    q = np.asarray(q)
-    if abs(norm(q)) < 0.000001:
+    q_norm = norm(q)
+    if abs(q_norm) < 0.000001:
         return np.zeros(len(q))
 
-    return q / norm(q)
+    return q / q_norm
 
-def conj(q: np.ndarray | list):
-    q = np.asarray(q)
+def conj(q: np.ndarray):
     q = -q
     q[0] *= -1
     return q
@@ -21,13 +19,22 @@ def hamilton_product(q: np.ndarray, w: np.ndarray | list):
     qw, qx, qy, qz = q
     wx, wy, wz = w
 
-    beta = np.array([
-        [-qx, -qy, -qz],
-        [qw, -qz, qy],
-        [qz, qw, -qx],
-        [-qy, qx, qw]
-    ])
-    return beta @ w
+    # beta = np.array([
+    #     [-qx, -qy, -qz],
+    #     [qw, -qz, qy],
+    #     [qz, qw, -qx],
+    #     [-qy, qx, qw]
+    # ])
+
+
+    prod = np.empty(4, dtype=np.float64)
+    prod[0] = -qx*wx - qy*wy - qz*wz
+    prod[1] =  qw*wx - qz*wy + qy*wz
+    prod[2] =  qw*wy + qz*wx - qx*wz
+    prod[3] =  qw*wz - qy*wx + qx*wy
+    return prod
+    # return beta @ w
+
 
 # =========================================================================================================== #
 #                                               Angle Axis                                                    #
@@ -37,7 +44,7 @@ def hamilton_product(q: np.ndarray, w: np.ndarray | list):
 def angle_axis_to_q(angle: float, axis: np.ndarray | list, degrees = False):
 
     angle_rad = angle * DEG2RAD if degrees else angle
-    unit_axis = axis / norm(axis)
+    unit_axis = unit(axis)
 
     w = np.cos(angle_rad / 2)
     if abs(w) < 0.1e-6:
@@ -73,10 +80,10 @@ def q_to_DCM(q: np.ndarray):
         raise ValueError(f"Input quaternion should have 4 elements. Input was {q}")
 
     # 0 Quaternion for whatever reason
-    if norm(q) == 0:
-        return np.zeros((3, 3))
-
     q_norm = unit(q)
+
+    if all(q_norm == 0):
+        return np.zeros((3, 3))
 
     # In the PDF, it is notated as s,i,j,k, not w,x,y,z
     s, i, j, k = q_norm
@@ -144,8 +151,8 @@ def mul(q1: np.ndarray, q2: np.ndarray):
 # ----- Applies Quaternion to Vector -----#
 def quat_apply(quat: np.ndarray, v: np.ndarray, passive=True):
 
-    quat = unit(np.array(quat))
-    v_quat = np.hstack(([0],np.asarray(v)))
+    quat = unit(quat)
+    v_quat = np.hstack(([0],v))
 
     if passive:
         """ q'*v*q """
