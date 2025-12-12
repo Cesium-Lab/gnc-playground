@@ -2,7 +2,7 @@
 import numpy as np
 
 from ..world.bodies import R_EARTH, R_EARTH_POLAR, ECC_EARTH, W_EARTH
-from .constants import DEG_TO_RAD, SEC_TO_DAY, ARCSEC_TO_DEG
+from .constants import DEG_TO_RAD, SEC_TO_DAY, ARCSEC_TO_RAD
 from .time import jd_to_julian_centuries
 ################################################################################
 #               LLA <--> ECEF 
@@ -212,31 +212,40 @@ def PN_matrix(t_tt: float, dX = 0.0, dY = 0.0):
 
     Args:
         t_tt (float): Julian Century (Terrestrial time)
-        dX (float): X correction (from EOP)
-        dY (float): Y correction (from EOP)
+        dX (float): X correction (from EOP) [arcsec]
+        dY (float): Y correction (from EOP) [arcsec]
 
     Returns:
         _type_: _description_
     """
 
+    # TODO: IMPLEMENT THE LOOKUPS
     # CIP unit vector X,Y and angle between CIO and GCRS equator s
     # Found using 5th degree spline (Vallado 4e p. 214-215)
-    X = ARCSEC_TO_DEG * (approx_5th_deg_spline(t_tt, X_coeff) + dX)
-    Y = ARCSEC_TO_DEG * (approx_5th_deg_spline(t_tt, Y_coeff) + dY)
-    s = ARCSEC_TO_DEG * (-X*Y/2 + approx_5th_deg_spline(t_tt, s_XY_2_coeff))
+    X_arcsec = approx_5th_deg_spline(t_tt, X_coeff) + dX
+    Y_arcsec = approx_5th_deg_spline(t_tt, Y_coeff) + dY
+    s_arcsec = -X_arcsec*Y_arcsec/2 + approx_5th_deg_spline(t_tt, s_XY_2_coeff)
     
+    X = ARCSEC_TO_RAD * X_arcsec
+    Y = ARCSEC_TO_RAD * Y_arcsec
+    s = ARCSEC_TO_RAD * s_arcsec
+    
+    
+    print(X_arcsec)
+    print(Y_arcsec)
+    print(s_arcsec)
+    # print(X)
+    # print(Y)
+    # print(s)
+
     # Vallado 4e p. 213 approximation
     a = 1/2 + 1/8*(X*X + Y*Y)
-
+    print(a / DEG_TO_RAD)
     mat = np.array([
         [1-a*X*X, -a*X*Y, X],
         [-a*X*Y, 1-a*Y*Y, Y],
         [-X, -Y, 1-a*(X*X + Y*Y)]
     ])
-    print(mat)
-
-
-    print(np.linalg.det(mat))
 
     Cs = np.cos(s)
     Ss = np.sin(s)
@@ -274,21 +283,10 @@ def itrf_to_gcrs_matrix(xp: float, yp: float, jd_utc: float,
     jd_tai = jd_utc + deltaAT_s * SEC_TO_DAY
     jd_tt = jd_tai + 32.184 * SEC_TO_DAY
     t_tt = jd_to_julian_centuries(jd_tt)
-
-    print(t_tt)
-    # jd_tt 
-
-    # UT1 - TAI = dUT1 - dAT
-
     
     W = W_matrix(xp, yp, t_tt)
-    print(f"{W=}")
-    print()
     R = R_matrix(jd_ut1)
-    print(f"{R=}")
-    print()
     PN = PN_matrix(t_tt, dX, dY)
-    print(f"{PN=}")
 
     PNRW = PN @ R @ W
 
