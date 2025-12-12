@@ -4,10 +4,10 @@ sys.path.append(".")
 import pytest
 
 import numpy as np
-from sims.physics.energy import calc_total_energy
-from sims.physics.rigid_body import rigid_body_derivative, RigidBodyParams
-from sims.math.integrators import rk4_func
-from sims.world.bodies import MU_EARTH
+from csim.physics.energy import calc_total_energy
+from csim.physics.rigid_body import rigid_body_derivative, RigidBodyParams
+from csim.math.integrators import rk4_func
+from csim.world.bodies import MU_EARTH
 def propagate(dt: float, tmax: float, state0: np.ndarray, params: RigidBodyParams):
     state = state0
     t = 0

@@ -4,8 +4,8 @@ import numpy as np
 import pytest
 sys.path.append(".")
 
-from sims.physics.energy import calc_kinetic_energy, calc_potential_energy, calc_total_energy
-from sims.world.bodies import MU_EARTH
+from csim.physics.energy import calc_kinetic_energy, calc_potential_energy, calc_total_energy
+from csim.world.bodies import MU_EARTH
 
 def test_PE_values_of_0():
     r = np.array([7000 ,0 ,0])

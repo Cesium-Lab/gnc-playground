@@ -3,8 +3,8 @@ import numpy as np
 
 sys.path.append(".")
 
-import sims.math.quaternion as Q
-from sims.math.quaternion import DEG2RAD
+import csim.math.quaternion as Q
+from csim.math.quaternion import DEG2RAD
 
 def test_conjugate():
     q = Q.conj(np.array([1.,0.,0.,0.]))

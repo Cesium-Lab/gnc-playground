@@ -3,7 +3,7 @@ import numpy as np
 
 sys.path.append(".")
 
-from sims.math.integrators import rk4_func
+from csim.math.integrators import rk4_func
 
 #################################################################
 #               Constant                                    
