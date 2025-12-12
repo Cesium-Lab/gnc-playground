@@ -15,3 +15,6 @@ UTC_TO_GPS = 18
 """Add to UTC to make GPS"""
 GPS_TO_UTC = -18
 """Add to GPS to make UTC"""
+
+SEC_TO_DAY = 86400
+DAY_TO_SEC = 1/SEC_TO_DAY

@@ -1,8 +1,12 @@
 # ruff: noqa: E741
 import numpy as np
 
-from ..world.bodies import R_EARTH, R_EARTH_POLAR, ECC_EARTH
-from .constants import DEG2RAD
+from ..world.bodies import R_EARTH, R_EARTH_POLAR, ECC_EARTH, W_EARTH
+from .constants import DEG2RAD, SEC_TO_DAY
+from .time import jd_to_julian_centuries
+################################################################################
+#               LLA <--> ECEF 
+################################################################################
 
 def surface_lla_to_ecef(lat_deg: float, lon_deg: float, alt_m = 0):
     """From geodetic site coordinates to position vector \\
@@ -82,3 +86,203 @@ def r_to_surface_lla(r_ecef: np.ndarray) -> tuple[float, float, float]:
     h_ellp = (r_horizontal_sat - a*t)*np.cos(lat_gd) + (rk-b)*np.sin(lat_gd)
     
     return (lat_gd, lon, h_ellp)
+
+################################################################################
+#               ITRF <--> GCRS 
+################################################################################
+
+"""
+Alright so this is tough.
+I didn't have the mental capacity to implement this at Vast (skill issue)
+The crux of it is that `r_gcrs = [P(t)][N(t)][R(t)][W(t)] @ r_itrf` where:
+- P(t) = Precession Matrix of date t
+- N(t) = Nutation Matrix of date t
+- R(t) = Sidereal Rotation Matrix of date t
+- W(t) = Polar-motion Matrix of date t
+"""
+
+X_coeff = [-0.016617, 2004.191898, -0.4297829,
+           -0.19861834, 0.000007578, 0.0000059285]
+Y_coeff = [-0.006951, -0.025896, -22.407274,
+           0.00190059, 0.001112526, 0.0000001258]
+s_XY_2_coeff = [0.000094, 0.00380865, -0.00012268,
+                -0.07257411, 0.00002798, 0.00001562]
+
+def approx_5th_deg_spline(t_tt, coeffs):
+    return (coeffs[0] + coeffs[1]*t_tt + coeffs[2]*t_tt**2 +
+         coeffs[3]*t_tt**3 + coeffs[4]*t_tt**4 + coeffs[5]*t_tt**5)
+
+
+
+"""
+need EOP data (pg 623 pdf, 604 normal)
+
+Need:
+- JD_UT1 from UT1-UTC (pdf)
+- xp,yp,s' (pdf)
+- X,Y,s (other pdf)
+- 
+
+
+ITRF -> TIRS with [W]
+- xp, yp, s'
+
+TIRS -> CIRS with [R]
+- JD_UT1 -> ERA
+- w_+ for velocity
+
+CIRS -> GCRF with [PN]
+- a,X,Y,s with T_TT and all the values
+- pdf 241
+- pdf 1077? for 
+https://aa.usno.navy.mil/downloads/reports/Hiltonetal2006.pdf ?
+
+3-62 -> get ERA
+need T_TT and T_TDB to get X,Y,s (JUST T_TT)
+
+
+
+a_p_i
+A_yc0_i
+
+Maia 2011 tab5.2a/b/d.txt
+
+"""
+
+def W_matrix(xp: float, yp: float, t_tt: float):
+    """Polar-motion matrix for ITRF <--> GCRS transformation.
+    Computes intermediate TIO locator `s'` using `t_tt` and a very accurate approximation. \\
+    Vallado 4e p. 212 \\
+    Could also augment with ocean tides and libration, but TODO for another day
+
+    Args:
+        xp (float): Polar x coord. of polar motion of CIP in ITRS
+        yp (float): Polar y coord. of polar motion of CIP in ITRS
+        t_tt (float): Julian Century (Terrestrial time)
+
+    Returns:
+        np.ndarray: Polar-motion matrix [W(t)]
+    """
+    # Coefficient varies by less than 0.0004" over next century
+    # Vallado 4e 3-61 p. 212
+    s = -0.000047 * t_tt * DEG2RAD
+    cs = np.cos(s)
+    ss = np.sin(s)
+
+    cx = np.cos(xp)
+    sx = np.sin(xp)
+
+    cy = np.cos(yp)
+    sy = np.sin(yp)
+
+    return np.array([
+        [cx*cs, -cy*ss + sy*sx*cs, -sy*ss - cy*sx*cs],
+        [cx*ss, cy*cs + sy*sx*ss, sy*cs - cy*sx*ss],
+        [sx, -sy*cx, cy*cx]
+    ])
+
+def R_matrix(jd_ut1: float):
+    """Sidereal rotation matrix for ITRF <--> GCRS.
+    Computes intermediate Earth Rotation Angle using `jd_ut1` \\
+    Vallado 4e p. 213
+
+    Args:
+        jd_ut1 (float): Julian date (UT1)
+
+    Returns:
+        np.ndarray: Sidereal-rotation matrix [R(t)]
+    """
+
+    # Vallado 4e 3-62 p. 213
+    theta_ERA = 2*np.pi*(
+        0.779057273264 + 1.00273781191135448*(jd_ut1 - 2451545)
+    )
+    C = np.cos(-theta_ERA)
+    S = np.sin(-theta_ERA)
+    return np.array([
+        [C, S, 0],
+        [-S, C, 0],
+        [0, 0, 1]
+    ])
+
+def PN_matrix(t_tt: float, dX = 0.0, dY = 0.0):
+    """Precession and nutation matrix for ITRF <--> GCRS.
+    Computes intermediate `a` with an approximation. \\
+    Vallado 4e p. 213
+
+    Args:
+        t_tt (float): Julian Century (Terrestrial time)
+        dX (float): X correction (from EOP)
+        dY (float): Y correction (from EOP)
+
+    Returns:
+        _type_: _description_
+    """
+
+    # CIP unit vector X,Y and angle between CIO and GCRS equator s
+    # Found using 5th degree spline (Vallado 4e p. 214-215)
+    X = approx_5th_deg_spline(t_tt, X_coeff) + dX
+    Y = approx_5th_deg_spline(t_tt, Y_coeff) + dY
+    s = -X*Y/2 + approx_5th_deg_spline(t_tt, s_XY_2_coeff)
+    
+    # Vallado 4e p. 213 approximation
+    a = 1/2 + 1/8*(X*X + Y*Y)
+
+    mat = np.array([
+        [1-a*X*X, -a*X*Y, X],
+        [-a*X*Y, 1-a*Y*Y, Y],
+        [-X, -Y, 1-a*(X*X + Y*Y)]
+    ])
+
+    Cs = np.cos(s)
+    Ss = np.sin(s)
+
+    rot3_s = np.array([
+        [Cs, Ss, 0],
+        [-Ss, Cs, 0],
+        [0, 0, 1]
+    ])
+
+    return mat @ rot3_s
+
+def itrf_to_gcrs_matrix(xp: float, yp: float, utc_s: float,
+                        deltaAT: float, deltaUT1: float):
+                #  t_tt: float, jd_ut1: float):
+    """Generates current matrix from ITRF <--> GCRS. 
+    Precalculate jd_ut1 and t_tt from 
+    Obtain xp, yp, deltaUT, dX, and dY from EOP data
+    Vallado 4e 3-57
+
+    Args:
+        xp (float): Polar x coord. of polar motion of CIP in ITRS
+        yp (float): Polar y coord. of polar motion of CIP in ITRS
+        # t_tt (float): Julian century (Terrestrial time)
+        # jd_ut1 (float): Julian date (UT1)
+
+    Returns:
+        np.ndarray: PNRW Rotation matrix such that r_GCRS = PNRW * r_ITRF
+    """
+
+    ut1 = utc_s + deltaUT1
+    tai = utc_s + deltaAT
+    tt = tai + 32.184
+    # jd_tt 
+
+    # UT1 - TAI = dUT1 - dAT
+
+    
+    W = W_matrix(xp, yp, t_tt)
+    R = R_matrix(jd_ut1)
+    PN = PN_matrix(t_tt, dX, dY)
+
+    PNRW = PN @ R @ W
+
+    return PNRW
+    
+
+    
+
+
+
+
+
