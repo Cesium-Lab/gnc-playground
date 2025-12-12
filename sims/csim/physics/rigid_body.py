@@ -1,4 +1,4 @@
-#  ruff: noqa: E741
+# ruff: noqa: E741
 from __future__ import annotations
 import numpy as np
 from dataclasses import dataclass
