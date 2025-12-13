@@ -5,7 +5,7 @@ import pytest
 sys.path.append(".")
 
 import csim.math.transformations as Trans
-from csim.math.constants import DEG_TO_RAD
+from csim.math.constants import DEG_TO_RAD, ARCSEC_TO_RAD, RAD_TO_ARCSEC, RAD_TO_DEG
 from csim.math.time import greg_to_jd
 
 def test_lla_to_r_example_3_1():
@@ -49,30 +49,52 @@ def test_r_to_lla_example_3_3():
 
 def test_vallado_itrf_W():
     """ Tests that determinant is 1. \\
-        Vallado 4e Example 3-15 p. 230"""
+        Vallado 4e Example 3-14 p. 220"""
     t_tt = 0.0426236319
-    xp = -0.140682 * DEG_TO_RAD
-    yp = 0.333309 * DEG_TO_RAD
+    xp = -0.140682 * ARCSEC_TO_RAD
+    yp = 0.333309 * ARCSEC_TO_RAD
 
     W = Trans.W_matrix(xp, yp, t_tt)
 
+    # Tests that determinant is 1
     assert np.linalg.det(W) == pytest.approx(1, 1e-9)
 
-def test_vallado_itrf_R():
-    """ Tests that determinant is 1. \\
-        Vallado 4e Example 3-15 p. 230"""
+    # Transforms vector correctly
+    r_itrf = np.array([-1033.479383, 7901.2952754, 6380.3565958])
+    r_tirs = W @ r_itrf
+    assert np.allclose(r_tirs, np.array([-1033.4750312, 7901.3055856, 6380.3445327]))
 
-    jd_ut1 = greg_to_jd(2004, 4, 6, 7, 51, 27.946047)
-    
+def test_vallado_itrf_R():
+    """ Tests that determinant is 1 \\
+        Vallado 4e Example 3-14 p. 220"""
+
+    jd_ut1 = greg_to_jd(2004, 4, 6, 7, 51, 27.946047 + 0.4399619)
+
     R = Trans.R_matrix(jd_ut1)
 
+    # Tests that determinant is 1
     assert np.linalg.det(R) == pytest.approx(1, 1e-9)
+    assert R[0,0] == pytest.approx(np.cos(312.7552829 * DEG_TO_RAD), rel=1e-4)
+
+    # Transforms vector correctly
+    r_tirs = np.array([-1033.4750312, 7901.3055856, 6380.3445327])
+    r_cirs = R @ r_tirs
+    assert np.allclose(r_cirs, np.array([5100.0184047, 6122.7863648, 6380.3445327]), rtol=1e-3)
+
+def test_vallado_itrf_XYsa_const():
+    """ Tests X,Y,s,a are calculated correctly for PN matrix\\
+        Vallado 4e Example 3-14 p. 220"""
+    t_tt = 0.0426236319
+    X,Y,s,a = Trans._X_Y_s_a(t_tt)
+
+    assert X * RAD_TO_ARCSEC == pytest.approx(80.531880, rel=1e-6)
+    assert Y * RAD_TO_ARCSEC == pytest.approx(7.273921, rel=1e-5)
+    assert s * RAD_TO_ARCSEC == pytest.approx(-0.003027, rel=1e-3)
+    assert a * RAD_TO_DEG == pytest.approx(28.647891, rel=1e-6)
 
 def test_vallado_itrf_PN():
-    """ Tests that determinant is 1. \\
-        Vallado 4e Example 3-15 p. 230"""
-
-# 0.042 623 631 9= = =
+    """Tests precession-nutation matrix
+    Vallado 4e Example 3-14 p. 220"""
 
     t_tt = 0.0426236319
     dX = -0.000205
@@ -80,23 +102,35 @@ def test_vallado_itrf_PN():
     
     PN = Trans.PN_matrix(t_tt, dX, dY)
 
+    # Tests that determinant is 1
     assert np.linalg.det(PN) == pytest.approx(1, 1e-9)
+
+    # Transforms vector correctly
+    r_cirs = np.array([5100.0184047, 6122.7863648, 6380.3445327])
+    r_gcrs = PN @ r_cirs
+    assert np.allclose(r_gcrs, np.array([5102.508959, 6123.011403, 6378.136925]))
 
 def test_vallado_full_itrf():
     # Book values are given in km
-    r_itrf = np.array([-1033.479383, 7901.2952754, 6380.3565958]) * 1000
-
+    r_itrf = np.array([-1033.479383, 7901.2952754, 6380.3565958])
+    expected = np.array([5102.508959, 6123.011403, 6378.136925])
     jd = greg_to_jd(2004, 4, 6, 7, 51, 28.386009)
 
-    xp = -0.140682 * DEG_TO_RAD
-    yp = 0.333309 * DEG_TO_RAD
+    xp = -0.140682 * ARCSEC_TO_RAD
+    yp = 0.333309 * ARCSEC_TO_RAD
     dAT = 32
     dUT1 = 0.4399619
-    dX = -0.000205
-    dY = -0.000136
+    dX = -0.000205 * ARCSEC_TO_RAD
+    dY = -0.000136 * ARCSEC_TO_RAD
 
     PNRW = Trans.itrf_to_gcrs_matrix(xp, yp, jd, dAT, dUT1, dX, dY)
 
+    # Tests that determinant is 1
     assert np.linalg.det(PNRW) == pytest.approx(1, 1e-9)
+    
+    # Transforms vector correctly
+    r_gcrs = PNRW @ r_itrf
+    assert np.allclose(r_gcrs, expected, rtol=1e-4)
 
-    print(PNRW @ r_itrf)
+
+#TODO: velocity and acceleration

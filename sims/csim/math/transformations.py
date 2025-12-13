@@ -4,6 +4,7 @@ import numpy as np
 from ..world.bodies import R_EARTH, R_EARTH_POLAR, ECC_EARTH, W_EARTH
 from .constants import DEG_TO_RAD, SEC_TO_DAY, ARCSEC_TO_RAD
 from .time import jd_to_julian_centuries
+from .CIP.parse import import_table, get_summation
 ################################################################################
 #               LLA <--> ECEF 
 ################################################################################
@@ -101,12 +102,12 @@ The crux of it is that `r_gcrs = [P(t)][N(t)][R(t)][W(t)] @ r_itrf` where:
 - W(t) = Polar-motion Matrix of date t
 """
 
-X_coeff = [-0.016617, 2004.191898, -0.4297829,
-           -0.19861834, 0.000007578, 0.0000059285]
-Y_coeff = [-0.006951, -0.025896, -22.407274,
-           0.00190059, 0.001112526, 0.0000001358]
-s_XY_2_coeff = [0.000094, 0.00380865, -0.00012268,
-                -0.07257411, 0.00002798, 0.00001562]
+# X_coeff = [-0.016617, 2004.191898, -0.4297829,
+#            -0.19861834, 0.000007578, 0.0000059285]
+# Y_coeff = [-0.006951, -0.025896, -22.407274,
+#            0.00190059, 0.001112526, 0.0000001358]
+# s_XY_2_coeff = [0.000094, 0.00380865, -0.00012268,
+#                 -0.07257411, 0.00002798, 0.00001562]
 
 def approx_5th_deg_spline(t_tt, coeffs):
     return (coeffs[0] + coeffs[1]*t_tt + coeffs[2]*t_tt**2 +
@@ -165,7 +166,8 @@ def W_matrix(xp: float, yp: float, t_tt: float):
     """
     # Coefficient varies by less than 0.0004" over next century
     # Vallado 4e 3-61 p. 212
-    s = -0.000047 * t_tt * DEG_TO_RAD
+    s = -0.000047 * t_tt * ARCSEC_TO_RAD
+
     cs = np.cos(s)
     ss = np.sin(s)
 
@@ -197,6 +199,7 @@ def R_matrix(jd_ut1: float):
     theta_ERA = 2*np.pi*(
         0.779057273264 + 1.00273781191135448*(jd_ut1 - 2451545)
     )
+    print((theta_ERA / DEG_TO_RAD) % 360)
     C = np.cos(-theta_ERA)
     S = np.sin(-theta_ERA)
     return np.array([
@@ -204,6 +207,51 @@ def R_matrix(jd_ut1: float):
         [-S, C, 0],
         [0, 0, 1]
     ])
+
+def _X_Y_s_a(t_tt: float):
+    t = t_tt
+    t2 = t * t
+    t3 = t * t2
+
+    X_coeffs, X_data = import_table("tab5.2a.txt")
+    Y_coeffs, Y_data = import_table("tab5.2b.txt")
+    s_coeffs, s_data = import_table("tab5.2d.txt")
+
+    X_u_arcsec = (approx_5th_deg_spline(t_tt, X_coeffs)
+          + get_summation(X_data[0], t_tt)
+          + get_summation(X_data[1], t_tt)*t
+          + get_summation(X_data[2], t_tt)*t2
+          + get_summation(X_data[3], t_tt)*t3
+    )
+
+    Y_u_arcsec = (approx_5th_deg_spline(t_tt, Y_coeffs)
+          + get_summation(Y_data[0], t_tt)
+          + get_summation(Y_data[1], t_tt)*t
+          + get_summation(Y_data[2], t_tt)*t2
+          + get_summation(Y_data[3], t_tt)*t3
+    )
+
+    # Microarcseconds 
+    X = X_u_arcsec / 1e6 * ARCSEC_TO_RAD
+    Y = Y_u_arcsec / 1e6 * ARCSEC_TO_RAD
+    
+    # Normal radians
+    # 
+    s = -X*Y/2 + (approx_5th_deg_spline(t_tt, s_coeffs)
+                  + get_summation(s_data[0], t_tt)
+                  + get_summation(s_data[1], t_tt)*t
+                  + get_summation(s_data[2], t_tt)*t2
+                  + get_summation(s_data[3], t_tt)*t3
+    ) / 1e6 * ARCSEC_TO_RAD
+
+
+    # TODO: IMPLEMENT THE LOOKUPS
+    # CIP unit vector X,Y and angle between CIO and GCRS equator s
+
+    # Vallado 4e p. 213 approximation
+    a = 1/2 + 1/8*(X*X + Y*Y)
+
+    return X,Y,s,a
 
 def PN_matrix(t_tt: float, dX = 0.0, dY = 0.0):
     """Precession and nutation matrix for ITRF <--> GCRS.
@@ -218,29 +266,7 @@ def PN_matrix(t_tt: float, dX = 0.0, dY = 0.0):
     Returns:
         _type_: _description_
     """
-
-    # TODO: IMPLEMENT THE LOOKUPS
-    # CIP unit vector X,Y and angle between CIO and GCRS equator s
-    # Found using 5th degree spline (Vallado 4e p. 214-215)
-    X_arcsec = approx_5th_deg_spline(t_tt, X_coeff) + dX
-    Y_arcsec = approx_5th_deg_spline(t_tt, Y_coeff) + dY
-    s_arcsec = -X_arcsec*Y_arcsec/2 + approx_5th_deg_spline(t_tt, s_XY_2_coeff)
-    
-    X = ARCSEC_TO_RAD * X_arcsec
-    Y = ARCSEC_TO_RAD * Y_arcsec
-    s = ARCSEC_TO_RAD * s_arcsec
-    
-    
-    print(X_arcsec)
-    print(Y_arcsec)
-    print(s_arcsec)
-    # print(X)
-    # print(Y)
-    # print(s)
-
-    # Vallado 4e p. 213 approximation
-    a = 1/2 + 1/8*(X*X + Y*Y)
-    print(a / DEG_TO_RAD)
+    X,Y,s,a = _X_Y_s_a(t_tt)
     mat = np.array([
         [1-a*X*X, -a*X*Y, X],
         [-a*X*Y, 1-a*Y*Y, Y],
