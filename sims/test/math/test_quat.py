@@ -4,7 +4,7 @@ import numpy as np
 sys.path.append(".")
 
 import csim.math.quaternion as Q
-from csim.math.quaternion import DEG2RAD
+from csim.math.quaternion import DEG_TO_RAD
 
 def test_conjugate():
     q = Q.conj(np.array([1.,0.,0.,0.]))
@@ -241,7 +241,7 @@ class TestApply:
         q = Q.angle_axis_to_q(1e-6, np.array([1,0,0]), True)
         v = [0,0,1]
         v_result = Q.quat_apply(q,v,passive=False)
-        angle = 1e-6 * DEG2RAD
+        angle = 1e-6 * DEG_TO_RAD
         assert np.allclose(v_result, [0, -np.sin(angle), np.cos(angle)])
 
     def test_Z_axis_from_rate_rotated_small_deg_around_X_axis_passive(self):
@@ -253,7 +253,7 @@ class TestApply:
         q = Q.angle_axis_to_q(1e-6, np.array([1,0,0]), True)
         v = [0,0,1]
         v_result = Q.quat_apply(q,v,passive=True)
-        angle = 1e-6 * DEG2RAD
+        angle = 1e-6 * DEG_TO_RAD
         assert np.allclose(v_result, [0, np.sin(angle), np.cos(angle)])
 
         # @testset "Weird rotations" begin

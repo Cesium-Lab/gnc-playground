@@ -1,4 +1,4 @@
-#  ruff: noqa: E741
+# ruff: noqa: E741
 import sys
 import numpy as np
 import pytest

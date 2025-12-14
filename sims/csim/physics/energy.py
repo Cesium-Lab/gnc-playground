@@ -1,4 +1,4 @@
-#  ruff: noqa: E741
+# ruff: noqa: E741
 # Energy sanity checks
 import numpy as np
 

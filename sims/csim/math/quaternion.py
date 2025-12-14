@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.linalg import norm
-from .constants import RAD2DEG, DEG2RAD
+from .constants import RAD_TO_DEG, DEG_TO_RAD
 
 def unit(q: np.ndarray):
     q_norm = norm(q)
@@ -43,7 +43,7 @@ def hamilton_product(q: np.ndarray, w: np.ndarray | list):
 # ----- Quaternion and Axis rotation -----#
 def angle_axis_to_q(angle: float, axis: np.ndarray | list, degrees = False):
 
-    angle_rad = angle * DEG2RAD if degrees else angle
+    angle_rad = angle * DEG_TO_RAD if degrees else angle
     unit_axis = unit(axis)
 
     w = np.cos(angle_rad / 2)
@@ -68,7 +68,7 @@ def q_to_angle_axis(quat: np.ndarray | list, degrees = False):
     k = z / np.sin(angle / 2)
 
     if degrees:
-        angle *= RAD2DEG
+        angle *= RAD_TO_DEG
 
     return angle, np.array([i, j, k])
 

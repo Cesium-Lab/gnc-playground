@@ -1,4 +1,4 @@
-#  ruff: noqa: E741
+# ruff: noqa: E741
 import sys
 sys.path.append(".")
 import pytest
