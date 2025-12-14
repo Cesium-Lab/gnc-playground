@@ -199,7 +199,7 @@ def R_matrix(jd_ut1: float):
     theta_ERA = 2*np.pi*(
         0.779057273264 + 1.00273781191135448*(jd_ut1 - 2451545)
     )
-    print((theta_ERA / DEG_TO_RAD) % 360)
+
     C = np.cos(-theta_ERA)
     S = np.sin(-theta_ERA)
     return np.array([
@@ -284,12 +284,14 @@ def PN_matrix(t_tt: float, dX = 0.0, dY = 0.0):
 
     return mat @ rot3_s
 
-def itrf_to_gcrs_matrix(xp: float, yp: float, jd_utc: float,
+def itrf_to_gcrs_matrices(xp: float, yp: float, jd_utc: float,
                         deltaAT_s: float, deltaUT1_s: float,
                         dX: float, dY: float):
-    """Generates current matrix from ITRF <--> GCRS. 
-    Precalculate jd_ut1 and t_tt from 
-    Obtain xp, yp, deltaUT, dX, and dY from EOP data
+    """Generates PN, R, and W matrices from ITRF <--> GCRS. \\
+    - Obtain xp, yp, deltaUT1_s, dX, and dY from EOP data.
+    - For vel and accel, modify the W matrix with golden rule
+
+
     Vallado 4e 3-57
 
     Args:
@@ -302,7 +304,7 @@ def itrf_to_gcrs_matrix(xp: float, yp: float, jd_utc: float,
         dY (float): Y correction (from EOP)
 
     Returns:
-        np.ndarray: PNRW Rotation matrix such that r_GCRS = PNRW * r_ITRF
+        tuple: (PN, R, W) Rotation matrices such that r_GCRS = PNRW * r_ITRF
     """
     
     jd_ut1 = jd_utc + deltaUT1_s * SEC_TO_DAY
@@ -314,14 +316,23 @@ def itrf_to_gcrs_matrix(xp: float, yp: float, jd_utc: float,
     R = R_matrix(jd_ut1)
     PN = PN_matrix(t_tt, dX, dY)
 
-    PNRW = PN @ R @ W
+    return PN, R, W
 
-    return PNRW
+def calc_v_tirs(R: np.ndarray, v_tirs: np.ndarray, w_earth_tirs: np.ndarray, r_tirs: np.ndarray):
+    """Formula normally `R @ v_tirs + np.cross(w_cirs, r_tirs))`
+    but we need have `w_tirs` so we use R and distribute:  `R @ (v_tirs + np.cross(w_tirs, r_tirs)) )` \\
+    Vallado 4e p. 213
+
+    Args:
+        R (np.ndarray): Sidereal-rotation matrix (ITRS --> CIRS)
+        v_tirs (np.ndarray): Velocity in TIRS system [m/s] or [km/s]
+        w_earth_tirs (np.ndarray): Angular velocity of Earth in TIRS system
+        r_tirs (np.ndarray): Position in TIRS system [m] or [km] (must be same as `v_tirs`)
+
+    Returns:
+        np.ndarray: velocity (CIRS) [m/s] or [km/s] (same as r and v inputs)
+    """
+    return R @ (v_tirs + np.cross(w_earth_tirs, r_tirs))
     
 
-    
-
-
-
-
-
+# TODO: ACCELERATION
