@@ -1,3 +1,5 @@
+"""Non-COES transformations"""
+
 # ruff: noqa: E741
 import numpy as np
 
@@ -5,6 +7,7 @@ from ..world.bodies import R_EARTH, R_EARTH_POLAR, ECC_EARTH, W_EARTH
 from .constants import DEG_TO_RAD, SEC_TO_DAY, ARCSEC_TO_RAD
 from .time import jd_to_julian_centuries
 from .CIP.parse import import_table, get_summation
+
 ################################################################################
 #               LLA <--> ECEF 
 ################################################################################
@@ -342,5 +345,3 @@ def calc_v_tirs(R: np.ndarray, v_tirs: np.ndarray, w_earth_tirs: np.ndarray, r_t
 # TODO: RAZEL
 
 # TODO: SITE
-
-
