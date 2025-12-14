@@ -100,6 +100,8 @@ The crux of it is that `r_gcrs = [P(t)][N(t)][R(t)][W(t)] @ r_itrf` where:
 - N(t) = Nutation Matrix of date t
 - R(t) = Sidereal Rotation Matrix of date t
 - W(t) = Polar-motion Matrix of date t
+
+Might be faster to do IAU-76/FK5 Reduction though
 """
 
 # X_coeff = [-0.016617, 2004.191898, -0.4297829,
@@ -292,7 +294,7 @@ def itrf_to_gcrs_matrices(xp: float, yp: float, jd_utc: float,
     - For vel and accel, modify the W matrix with golden rule
 
 
-    Vallado 4e 3-57
+    Vallado 4e Algorithm 23 p. 221
 
     Args:
         xp (float): Polar x coord. of polar motion of CIP in ITRS [rad]
@@ -335,4 +337,10 @@ def calc_v_tirs(R: np.ndarray, v_tirs: np.ndarray, w_earth_tirs: np.ndarray, r_t
     return R @ (v_tirs + np.cross(w_earth_tirs, r_tirs))
     
 
-# TODO: ACCELERATION
+# TODO: ECI ECEF 
+
+# TODO: RAZEL
+
+# TODO: SITE
+
+
