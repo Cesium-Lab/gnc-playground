@@ -107,13 +107,6 @@ The crux of it is that `r_gcrs = [P(t)][N(t)][R(t)][W(t)] @ r_itrf` where:
 Might be faster to do IAU-76/FK5 Reduction though
 """
 
-# X_coeff = [-0.016617, 2004.191898, -0.4297829,
-#            -0.19861834, 0.000007578, 0.0000059285]
-# Y_coeff = [-0.006951, -0.025896, -22.407274,
-#            0.00190059, 0.001112526, 0.0000001358]
-# s_XY_2_coeff = [0.000094, 0.00380865, -0.00012268,
-#                 -0.07257411, 0.00002798, 0.00001562]
-
 def approx_5th_deg_spline(t_tt, coeffs):
     return (coeffs[0] + coeffs[1]*t_tt + coeffs[2]*t_tt**2 +
          coeffs[3]*t_tt**3 + coeffs[4]*t_tt**4 + coeffs[5]*t_tt**5)
