@@ -153,10 +153,10 @@ def coes_to_rv(a: float, e: float, i: float, raan: float, aop: float, ta: float,
 
     # Position in perifocal frame with components (P, Q, W) where P points to periapsis
     r_mag = p / (1 + e * np.cos(ta))
-    r_pf = r_mag * [np.cos(ta), np.sin(ta), 0.0]
+    r_pf = r_mag * np.array([np.cos(ta), np.sin(ta), 0.0])
 
     # Velocity in perifocal frame
-    v_pf = np.sqrt(mu / p) * [-np.sin(ta), e + np.cos(ta), 0.0]
+    v_pf = np.sqrt(mu / p) * np.array([-np.sin(ta), e + np.cos(ta), 0.0])
 
     # Rotation matrix from perifocal to ECI
     # R = R3(-raan) * R1(-i) * R3(-aop)
