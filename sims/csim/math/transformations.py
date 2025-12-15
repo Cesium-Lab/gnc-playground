@@ -1,10 +1,13 @@
+"""Non-COES transformations"""
+
 # ruff: noqa: E741
 import numpy as np
 
-from ..world.bodies import R_EARTH, R_EARTH_POLAR, ECC_EARTH, W_EARTH
+from ..world.bodies import R_EARTH, R_EARTH_POLAR, ECC_EARTH
 from .constants import DEG_TO_RAD, SEC_TO_DAY, ARCSEC_TO_RAD
 from .time import jd_to_julian_centuries
 from .CIP.parse import import_table, get_summation
+
 ################################################################################
 #               LLA <--> ECEF 
 ################################################################################
@@ -103,13 +106,6 @@ The crux of it is that `r_gcrs = [P(t)][N(t)][R(t)][W(t)] @ r_itrf` where:
 
 Might be faster to do IAU-76/FK5 Reduction though
 """
-
-# X_coeff = [-0.016617, 2004.191898, -0.4297829,
-#            -0.19861834, 0.000007578, 0.0000059285]
-# Y_coeff = [-0.006951, -0.025896, -22.407274,
-#            0.00190059, 0.001112526, 0.0000001358]
-# s_XY_2_coeff = [0.000094, 0.00380865, -0.00012268,
-#                 -0.07257411, 0.00002798, 0.00001562]
 
 def approx_5th_deg_spline(t_tt, coeffs):
     return (coeffs[0] + coeffs[1]*t_tt + coeffs[2]*t_tt**2 +
@@ -342,5 +338,3 @@ def calc_v_tirs(R: np.ndarray, v_tirs: np.ndarray, w_earth_tirs: np.ndarray, r_t
 # TODO: RAZEL
 
 # TODO: SITE
-
-
