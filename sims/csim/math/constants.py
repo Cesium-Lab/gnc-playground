@@ -28,6 +28,15 @@ GPS_TO_UTC = -18
 DAY_TO_SEC = 86400
 SEC_TO_DAY = 1/DAY_TO_SEC
 
+SIDEREAL_DAY_TO_SEC = 86164.090517
+SEC_TO_SIDEREAL_DAY = 1/SIDEREAL_DAY_TO_SEC
+
+YEAR_TO_DAY = 365.2421897
+DAY_TO_YEAR = 1/YEAR_TO_DAY
+SIDEREAL_YEAR_TO_DAY = 365.256363
+DAY_TO_SIDEREAL_YEAR = 1/SIDEREAL_YEAR_TO_DAY
+
+
 ########################################
 #               Force
 ########################################

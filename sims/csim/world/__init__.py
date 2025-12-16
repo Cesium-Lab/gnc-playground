@@ -6,6 +6,6 @@ from .constants import  (
     W_EARTH,
     ECC_EARTH,
     G_CONST,
-    GRAV_POLE,
-    GRAV_POLE
+    # GRAV_POLE,
+    # GRAV_POLE
 )

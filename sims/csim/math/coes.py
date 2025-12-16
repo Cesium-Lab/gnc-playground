@@ -4,6 +4,10 @@ import numpy as np
 from ..world import MU_EARTH_KM
 from numpy.linalg import norm
 
+####################################################################################################
+#               Kepler
+####################################################################################################
+
 def kelper_eq_ellipse(M: float, e: float, tol = 1e-9, max_iter = 100):
     """`(M,e) -> E` \\
     Solve Kelper's equation (elliptic) `M = E - e*sin(E)` using iteration \\
@@ -36,6 +40,10 @@ def kelper_eq_ellipse(M: float, e: float, tol = 1e-9, max_iter = 100):
         E_n = E_guess
 
     raise ValueError(f"Did not converge for {M=}, {e=}")
+
+####################################################################################################
+#               rv <--> coes
+####################################################################################################
 
 def rv_to_coes(r_eci: np.ndarray, v_eci: np.ndarray, mu: float = MU_EARTH_KM):
     """Convert ECI position and velocity vectors to classical Keplerian orbital elements. \\
@@ -185,11 +193,15 @@ def coes_to_rv(a: float, e: float, i: float, raan: float, aop: float, ta: float,
 
 # TODO: Kepler's problem?
 
-
+####################################################################################################
+#               Random quantities
+####################################################################################################
+    
+# TODO: stuff like sma<-->period, etc.
     
 
 ################################################################################
-#               Two-line Element Sets 
+#               Two-line Elements
 ################################################################################
 
 # TODO: TLEs
