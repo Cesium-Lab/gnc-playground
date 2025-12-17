@@ -27,3 +27,13 @@ GPS_TO_UTC = -18
 
 DAY_TO_SEC = 86400
 SEC_TO_DAY = 1/DAY_TO_SEC
+
+########################################
+#               Force
+########################################
+
+LBF_TO_N = 4.44822
+N_TO_LBF = 1/LBF_TO_N
+
+KG_TO_LBM = 2.20462
+LBM2KG = 1 / KG_TO_LBM

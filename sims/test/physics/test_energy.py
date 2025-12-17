@@ -5,7 +5,7 @@ import pytest
 sys.path.append(".")
 
 from csim.physics.energy import calc_kinetic_energy, calc_potential_energy, calc_total_energy
-from csim.world.bodies import MU_EARTH
+from csim.world import MU_EARTH
 
 def test_PE_values_of_0():
     r = np.array([7000 ,0 ,0])
