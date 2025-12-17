@@ -1,7 +1,7 @@
 """COES"""
 # ruff: noqa: E741
 import numpy as np
-from ..world.bodies import MU_EARTH_KM
+from ..world import MU_EARTH_KM
 from numpy.linalg import norm
 
 def kelper_eq_ellipse(M: float, e: float, tol = 1e-9, max_iter = 100):

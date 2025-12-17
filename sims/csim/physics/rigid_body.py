@@ -29,7 +29,7 @@ def rigid_body_derivative(t: float, state: np.ndarray, params: RigidBodyParams):
     # print(dqdt)
     # Angular derivative based on (Schaub 4.34-35)
     I = params.I
-    I_inv = np.linalg.inv(I)
+    I_inv = np.linalg.inv(I) #TODO: maybe precalc this
     torque = np.asarray(params.torque_Nm)
 
     # τ = parameters.torque_body
