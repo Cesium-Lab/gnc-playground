@@ -1,5 +1,5 @@
 import numpy as np
-from .spacecraft import Spacecraft
+from ..entities import Spacecraft
 from ..math.integrators import rk4_func
 from ..physics.rigid_body import rigid_body_derivative, RigidBodyParams
 
