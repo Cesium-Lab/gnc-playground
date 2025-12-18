@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.linalg import norm
-from .constants import RAD_TO_DEG, DEG_TO_RAD
+from ..constants import RAD_TO_DEG, DEG_TO_RAD
 
 def unit(q: np.ndarray):
     q_norm = norm(q)

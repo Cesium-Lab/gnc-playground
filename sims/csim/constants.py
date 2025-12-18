@@ -36,13 +36,14 @@ DAY_TO_YEAR = 1/YEAR_TO_DAY
 SIDEREAL_YEAR_TO_DAY = 365.256363
 DAY_TO_SIDEREAL_YEAR = 1/SIDEREAL_YEAR_TO_DAY
 
-
 ########################################
-#               Force
+#               Physics Stuff
 ########################################
 
+# Force
 LBF_TO_N = 4.44822
 N_TO_LBF = 1/LBF_TO_N
 
+# Mass
 KG_TO_LBM = 2.20462
-LBM2KG = 1 / KG_TO_LBM
+LBM_TO_KG = 1 / KG_TO_LBM

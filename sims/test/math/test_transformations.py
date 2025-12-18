@@ -6,7 +6,7 @@ sys.path.append(".")
 
 import csim.math.transformations as Trans
 from csim.world import W_EARTH
-from csim.math.constants import DEG_TO_RAD, ARCSEC_TO_RAD, RAD_TO_ARCSEC, RAD_TO_DEG
+from csim.constants import DEG_TO_RAD, ARCSEC_TO_RAD, RAD_TO_ARCSEC, RAD_TO_DEG
 from csim.math.time import greg_to_jd
 
 #########################################################################################################
