@@ -1,1 +1,1 @@
-from ..entities.spacecraft import Spacecraft
+from .components.motor import Motor
