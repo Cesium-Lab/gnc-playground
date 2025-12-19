@@ -30,4 +30,5 @@ GRAV_EARTH_EQUA = 9.7803253359
 """Earth's gravitational acceleration at the equator (Vallado 4e p. 141)"""
 
 J2_EARTH = 0.0010826267
+
 J3_EARTH = -0.0000025327
