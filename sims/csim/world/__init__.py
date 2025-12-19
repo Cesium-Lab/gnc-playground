@@ -6,6 +6,7 @@ from .constants import  (
     W_EARTH,
     ECC_EARTH,
     G_CONST,
-    GRAV_POLE,
-    GRAV_POLE
+    J2_EARTH,
+    GRAV_EARTH_POLE,
+    GRAV_EARTH_EQUA
 )

@@ -3,7 +3,7 @@ from pathlib import Path
 from numpy.polynomial import Polynomial
 import numpy as np
 
-from ..constants import ARCSEC_TO_RAD
+from ...constants import ARCSEC_TO_RAD
 
 planetary_effect_cols = ["index", "(s,j)", "(c,j)", "l" , "l'" , "F" , "D", "Om", "L_Me", "L_Ve", "L_E", "L_Ma", "L_J", "L_Sa", "L_U", "L_Ne", "p_A"]
 

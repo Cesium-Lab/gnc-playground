@@ -6,7 +6,7 @@ from pprint import pprint
 sys.path.append(".")
 
 from csim.math.coes import kelper_eq_ellipse, rv_to_coes, coes_to_rv
-from csim.math.constants import DEG_TO_RAD, RAD_TO_DEG
+from csim.constants import DEG_TO_RAD, RAD_TO_DEG
 from csim.world import MU_EARTH
 
 def test_kelper():

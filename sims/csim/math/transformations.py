@@ -3,8 +3,8 @@
 # ruff: noqa: E741
 import numpy as np
 
-from ..world import R_EARTH, R_EARTH_POLAR, ECC_EARTH, W_EARTH
-from .constants import DEG_TO_RAD, SEC_TO_DAY, ARCSEC_TO_RAD
+from ..world import R_EARTH, R_EARTH_POLAR, ECC_EARTH
+from ..constants import DEG_TO_RAD, SEC_TO_DAY, ARCSEC_TO_RAD
 from .time import jd_to_julian_centuries
 from .CIP.parse import import_table, get_summation
 
