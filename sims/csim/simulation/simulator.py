@@ -9,6 +9,7 @@ from ..world import MU_EARTH
 from ..physics.energy import calc_potential_energy, calc_kinetic_energy
 # TODO: def finish this
 
+# TODO: Different integrators for better ECI-ECEF OR interpolate every second or something
 
 class Simulator:
     def __init__(self, state0: np.ndarray, t0: float, dt: float, n_steps: float, spacecraft: Spacecraft):
