@@ -4,6 +4,9 @@
 - Prediction and update phase
 - Can ONLY use zero-mean Gaussian distributions for noise
   - If so, best minimum mean square error estimator
+- EXACT SOLUTION for linear-Gaussian
+
+[Link](https://arxiv.org/pdf/1910.03558)
 
 ### History
 - Called Kalman-Bucy filter
@@ -14,7 +17,7 @@
 - sensor and data fusion
 - With LQR, solves linear quadratic gaussian problem
 
-![alt text](image-5.png)
+![alt text](images/image-5.png)
 
 ### Derivation
 - First moment (mean) and second moment (variance) of the Gaussian distribution
@@ -52,16 +55,17 @@
     - alpha is spread of points around mean, very small
     - kappa in corporates prior knowledge
     - beta optional
-    - ![UKF](image.png)
+- 
 
 ### Steps
-![UKF](image-2.png)
+![UKF](images/image.png)
+![UKF](images/image-2.png)
 
 Setup
 1. Calculate Weights
    1. Note that the non-center points have the same weights
    2. Center point has some other factor for cov
-   3. ![alt text](image-3.png)
+   3. ![alt text](images/image-3.png)
 
 
 #### Running
@@ -90,7 +94,7 @@ Setup
 * Wi_mean = Wi_cov = 1/2/(L+lambda)
 
 My summary
-![alt text](image-7.png)
+![alt text](images/image-7.png)
 
 1. Get sigma points
    1. Sa0 = Sa_0 (for mean)
@@ -109,7 +113,7 @@ My summary
    3. K = P_xy * inv(P_yy)
 5. Update
    1. x = x- + K(y_meas - y_exp)
-   2. P = P- - K*Pyy*K' = P- - P_xy*inv(P_yy)*P_xy' (since P_yy is symmetrical the transpose of the inverse is the inverse
+   2. P = P- - K Pyy K' = P- - P_xy inv(P_yy) P_xy' (since P_yy is symmetrical the transpose of the inverse is the inverse
 
 **TODO**: Make UKF in code
 
@@ -117,12 +121,13 @@ My summary
 - Better with orientation because error quaternion instead of adding it
   - Only vector part parametrizes
   - Twice a is the principal rotation vector
-  - ![alt text](image-4.png)
+  - ![alt text](images/image-4.png)
+- Avoids norm preservation and over-parameterization
 
 [good paper](https://ntrs.nasa.gov/api/citations/20040037784/downloads/20040037784.pdf)
 
 My summary
-![alt text](image-6.png)
+![alt text](images/image-6.png)
 
 1. Get a priori.
    1. w_hat = w_meas - b_hat
@@ -152,11 +157,12 @@ My summary
   - Numerical errors have half the effect
 - Cost
   - QR / Cholesky
+- Guarantees PSD of Q
 
 [paper](https://arxiv.org/pdf/2208.06452)
 
 Hard
-![alt text](image-8.png)
+![alt text](images/image-8.png)
 
 
 ## UDU Kalman Filter
@@ -164,7 +170,9 @@ Hard
 <!-- [Link](https://pmc.ncbi.nlm.nih.gov/articles/PMC11124921/pdf/sensors-24-03048.pdf) -->
 [Summary](https://arxiv.org/pdf/2203.06105)
 
-
+- Guarantees PSD of Q
+- REQUIRES diagonal R
+  - Single measurement updates
 - $P = UDU^T$ where $U$ is upper triangular with 1's on the diagonals, and $D$ is diagonal
 - UD factorization doesn't require square root (only +, *, /)
 - Uses Thornton's algorithm (weighted modified gram-schmidt orthogonalization)
@@ -174,9 +182,13 @@ Hard
   - Less intuitive to modify
   - degenerate D
 
-![alt text](image-9.png)
+My Summary
+- Note that you have to do steps 3-4 for each measurement scalar (which is crazy)
+![alt text](images/image-9.png)
 
-## Consistency
+
+TODO
+# Consistency
 - NIS
 - NEES
 - chi-square test
@@ -186,7 +198,3 @@ Hard
 
 ## Q/R Gain Tuning
 - Scaling 
-
-# Links
-- https://arxiv.org/pdf/1910.03558
-- 
