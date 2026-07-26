@@ -50,7 +50,7 @@ Useful for $\Delta v$ checks
 There was a slideshow in AA 278 that I can't find. Bolded for important.
 - [Spherical harmonics](https://en.wikipedia.org/wiki/Spherical_harmonics)
   - **[J2 (oblateness)](https://control.asu.edu/Classes/MAE462/462Lecture13.pdf)**
-    - Earth's equatorial bulge causes secular (long-term, low) drift
+    - Earth's equatorial bulge causes secular (long-term, low) drift drift of RAAN and AOP
   - Higher zonal harmonics (J3, J4, J5)
     - Orders of magnitude smaller than J2
   - Tesseral/sectoral
@@ -64,13 +64,29 @@ There was a slideshow in AA 278 that I can't find. Bolded for important.
 - Tides
 - Relativistic
 - **Atmospheric drag**
-  - Decay in $a$ and also depends on ballistic coefficient
+  - Decay in $a$ and also depends on ballistic coefficient and atmospheric density
+  - Mainly in LEO
 - **Solar radiation pressure**
   - Reflected sunlight/radiation
 - Albedo / IR radiation pressure
   - Same as SRP but from Earth or Moon
 - Outgassing / thermal effects
   - Spacecraft's own materials/thrusters, notoriously affected early GPS orbit solutions before well modeled
+
+### Lagrange points
+- L1, L2, L3 colinear but unstable
+- L5, L4 stable
+- Webb orbits around L2
+  - "Halo/libration-point orbits"
+![alt text](image-25.png)
+
+### Perturbations
+
+### Restricted three-body problem & Lagrange points
+- CR3BP: two large primaries in circular orbits about their barycenter, a massless third body moving under both gravities
+- 5 Lagrange points: L1/L2/L3 (collinear, unstable), L4/L5 (triangular, stable for suitable mass ratios)
+- Halo/libration-point orbits around L1/L2 — periodic or quasi-periodic, relevant to cislunar/gateway-type missions. Worth knowing this exists and roughly why it's useful (low-energy transfers, persistent lunar-adjacent coverage) even without deriving it.
+
 
 
 Earth orbit
@@ -108,8 +124,27 @@ With Moon Orbit
   - Inputs of TLE
 
 ## Hill / Clohessy-Wiltshire equations
+- Orbital motion **relative** to a target in orbit
+  - Rotating reference frame
+- Don't need to propagate both sats
+- Interesting things
+  - Out-of-plane $z$ motion is simple harmonic motion (which makes sense when you think about intersecting nodes and a fixed inclination)
+  - $x$ and $y$ motion are coupled
+![alt text](image-20.png)
+
+
+### Derivation of equations
+- ASSUMPTIONS
+  - Circular orbit
+    1. $r << r_t$ aka distance from the target is much less than the target's orbital radius (duh)
+    2. $\omega = 0$ cancels out Euler term in rotating acceleration
+    3. $\omega \perp r$ so no $sin$ term appears in the Coriolis term
+![alt text](image-19.png)
+![alt text](image-21.png)
+![alt text](image-22.png)
+![alt text](image-23.png)
+
 - Goal: describe a chaser's motion *relative* to a target on a circular reference orbit, without propagating full two-body dynamics for both bodies separately
-- Derivation sketch: chaser position = target position + relative offset → substitute into the two-body EOM → linearize (first-order Taylor expansion) about the small relative offset → get linear, time-invariant equations in the rotating (Hill/LVLH) frame
 - Result: in-plane (x, y) motion couples through the orbital rate n; out-of-plane (z) motion decouples into a simple harmonic oscillator
 - Natural motion: in-plane relative orbits trace 2:1 ellipses around the target *unless* there's a net along-track drift term — always check for that drift term when reading a relative trajectory
 - Key limitation: only valid for a circular (or near-circular) reference orbit and small relative separation. Eccentric references need the extended Tschauner-Hempel / Yamanaka-Ankersen formulations.
@@ -125,25 +160,22 @@ Links
 ![alt text](image-18.png)
 
 
-### Orbital maneuvers & propulsion
-- **Hohmann transfer**: two-impulse, minimum-energy transfer between coplanar circular orbits — both Δv's come straight out of vis-viva
-- **Bi-elliptic transfer**: beats Hohmann in total Δv for large orbit-radius ratios, at the cost of transfer time
-- **Plane change**: Δv = 2v·sin(Δi/2) — expensive; cheapest when done at the lowest-velocity point of the orbit, ideally combined with another maneuver
-- **Tsiolkovsky rocket equation**: Δv = Isp·g₀·ln(m₀/m_f) — connects propellant mass fraction to achievable Δv; know how to invert it to solve for required propellant given a Δv budget
-### Perturbations
-- **J2 (Earth oblateness)**: causes secular drift in RAAN and argument of periapsis — deliberately exploited for sun-synchronous orbit design
-- **Atmospheric drag**: dominant in LEO, causes decay, scales with atmospheric density (varies with solar activity) and ballistic coefficient
-- **Solar radiation pressure**: small but non-negligible for high area-to-mass spacecraft or long missions
-- **Third-body effects**: sun/moon gravity perturbs Earth orbits, but becomes a *primary* force (not a perturbation) for cislunar trajectories — relevant given your Blue Origin lunar work
-### Restricted three-body problem & Lagrange points
-- CR3BP: two large primaries in circular orbits about their barycenter, a massless third body moving under both gravities
-- 5 Lagrange points: L1/L2/L3 (collinear, unstable), L4/L5 (triangular, stable for suitable mass ratios)
-- Halo/libration-point orbits around L1/L2 — periodic or quasi-periodic, relevant to cislunar/gateway-type missions. Worth knowing this exists and roughly why it's useful (low-energy transfers, persistent lunar-adjacent coverage) even without deriving it.
-### Rigid body attitude dynamics
-- **Euler's equations**: Iω̇ + ω × (Iω) = τ — nonlinear even with zero external torque, because angular velocity components couple through the inertia tensor
-- Torque-free motion of an asymmetric body: rotation about the *intermediate* principal axis is unstable (the "tennis racket theorem") — a good one to have in your back pocket
-- **Gravity gradient torque**: differential gravity across a body's extent creates a restoring torque toward local vertical — a passive attitude stabilization mechanism
-- Angular momentum H = Iω is conserved (inertial frame, no external torque), even though ω itself isn't constant unless spinning about a principal axis
+## Other rendezvous frames
+
+![alt text](image-24.png)
+
+- Quadratic Volterra (QV)
+- Yamanaka-Ankersen (YA)
+- Butcher et al.
+- Some new solution (huge)
+  - ([D'Amico's paper](https://slab.sites.stanford.edu/sites/g/files/sbiybj25201/files/media/file/asm2019_willislovelldamico_final.pdf))
+
+
+## Common and useful orbits
+
+TODO
+
+
 
 ## Kepler's laws
 
