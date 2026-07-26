@@ -8,13 +8,13 @@
 - Use cost/performance to get the BEST trajectory
 
 ### Formulation
-- Dynamics/system ![alt text](image.png)
+- Dynamics/system ![alt text](images/optimization/image.png)
 - Constraints
-  - ![alt text](image-1.png)
+  - ![alt text](images/optimization/image-1.png)
 - Boundary conditions
-  - ![alt text](image-2.png)
+  - ![alt text](images/optimization/image-2.png)
 - Performance
-  - ![alt text](image-3.png)
+  - ![alt text](images/optimization/image-3.png)
   - Terminal and running cost
 
 ### Constraints
@@ -23,15 +23,15 @@
 - Hessian is Positive semidefinite (PSD) for unconstrained local min, PD for strict local/global
 
 **Lagrangian**
-- ![alt text](image-9.png)
+- ![alt text](images/optimization/image-9.png)
 - With equality ($h$ term) and inequality ($g$ term) constraints
 - Inequality lagrange multiplier $\mu$ may be 0 if constraint is not active (strictly equal) at optimality
 
 ### Gradient Descent (random thing)
 - Matrix of $D$ governs order and magnitude of descent
-- ![alt text](image-4.png)
-- ![alt text](image-5.png)
-- ![alt text](image-6.png)
+- ![alt text](images/optimization/image-4.png)
+- ![alt text](images/optimization/image-5.png)
+- ![alt text](images/optimization/image-6.png)
 
 ## Indirect methods
 - ***Optimize THEN Discretize***
@@ -43,7 +43,7 @@
 
 ### Analytic
 **Hamiltonian**
-- ![alt text](image-7.png)
+- ![alt text](images/optimization/image-7.png)
 - Costate $p$ or $\lambda$ is how much optimal cost would change if $x$ is nudged
   - High means state is expensive to be wrong about
 - Instantaneous cost and weighted cost of dynamics (via $p$) 
@@ -51,9 +51,9 @@
 **Optimal trajectory (unbounded)**
 - State evolves forward ( $\dot{x} = f(x,u,t)$ )
 - Costate evolves backward from end of trajectory (so 2 point boundary)
-- ![alt text](image-8.png)
+- ![alt text](images/optimization/image-8.png)
 - With boundary conditions on costate (derived by CoV theorem)
-- ![alt text](image-10.png)
+- ![alt text](images/optimization/image-10.png)
 - Could be one of a bunch of others though
   - WHOLE TABLE of them
 
@@ -156,12 +156,12 @@ $\texttt{scipy.solve\_bvp}$
   - Tail problem must be optimal too (so we can backward pass yay)
   - Optimization step-by-step
 - Cost at step $k$ based on step $k+1$
-  - ![alt text](image-11.png)
+  - ![alt text](images/optimization/image-11.png)
 
 ### Discrete time LQR
 - Work backward to find cost-to-go
 
-![alt text](image-12.png)
+![alt text](images/optimization/image-12.png)
 
 
 ### iLQR
@@ -171,7 +171,7 @@ $\texttt{scipy.solve\_bvp}$
   - Basically want to drive this to u because then it is at the optimal trajectory
 - Forward pass to add du to inputs to get new u_bar and propagate with real dynamics to get new states s_bar
 
-![alt text](image-13.png)
+![alt text](images/optimization/image-13.png)
 
 
 
@@ -182,8 +182,8 @@ $\texttt{scipy.solve\_bvp}$
 
 [Wiki](https://en.wikipedia.org/wiki/Differential_dynamic_programming)
 
-![alt text](image-14.png)
-![alt text](image-15.png) ![alt text](image-16.png)
+![alt text](images/optimization/image-14.png)
+![alt text](images/optimization/image-15.png) ![alt text](images/optimization/image-16.png)
 TODO
 
 
