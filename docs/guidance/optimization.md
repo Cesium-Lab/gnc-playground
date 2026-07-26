@@ -177,8 +177,13 @@ $\texttt{scipy.solve\_bvp}$
 
 # DDP
 - **Approximates the VALUE FUNCTION**
-- Optimizes the current step's cost
+- Optimizes the current step's cost in the back step
+  - Gets optimal u based on this linearized cost (by getting the gains)
 
+[Wiki](https://en.wikipedia.org/wiki/Differential_dynamic_programming)
+
+![alt text](image-14.png)
+![alt text](image-15.png) ![alt text](image-16.png)
 TODO
 
 
