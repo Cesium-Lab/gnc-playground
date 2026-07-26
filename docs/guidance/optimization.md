@@ -1,4 +1,4 @@
-# Optimization
+# Open Loop Optimization
 
 ## Overview
 [Wiki trajectory optimization](https://en.wikipedia.org/wiki/Trajectory_optimization)
@@ -26,6 +26,12 @@
 - ![alt text](image-9.png)
 - With equality ($h$ term) and inequality ($g$ term) constraints
 - Inequality lagrange multiplier $\mu$ may be 0 if constraint is not active (strictly equal) at optimality
+
+### Gradient Descent (random thing)
+- Matrix of $D$ governs order and magnitude of descent
+- ![alt text](image-4.png)
+- ![alt text](image-5.png)
+- ![alt text](image-6.png)
 
 ## Indirect methods
 - ***Optimize THEN Discretize***
@@ -132,16 +138,57 @@ $\texttt{scipy.solve\_bvp}$
   - Need to fully converge for a dynamically-feasible trajectory
 
 
-indirect/direct methods, cost functions, LQR/iLQR/DDP, constrained optimization (penalty/barrier/augmented Lagrangian/SQP)
+### Sequential Convex Programming
+- Just keep linearizing the dynamics around current best guess trajectory
+- Turns problem convex
 
 
-## Random
+### Strategy
+- Short, stable problems $\rarr$ shooting
+- Long, unstable, nonlinear problems $\rarr$ collocation/simultaneus
+  - Better for path constraints
 
-### Gradient Descent
-- Matrix of $D$ governs order and magnitude of descent
-- ![alt text](image-4.png)
-- ![alt text](image-5.png)
-- ![alt text](image-6.png)
+
+# Closed Loop Optimization
+
+## Dynamic Programming
+- Principle of optimality
+  - Tail problem must be optimal too (so we can backward pass yay)
+  - Optimization step-by-step
+- Cost at step $k$ based on step $k+1$
+  - ![alt text](image-11.png)
+
+### Discrete time LQR
+- Work backward to find cost-to-go
+
+![alt text](image-12.png)
+
+
+### iLQR
+- **Approximates the SYSTEM**
+- Have some "reference" s_bar and u_bar
+- LQR optimization over du gets optimal feedback and feedforward terms
+  - Basically want to drive this to u because then it is at the optimal trajectory
+- Forward pass to add du to inputs to get new u_bar and propagate with real dynamics to get new states s_bar
+
+![alt text](image-13.png)
+
+
+
+# DDP
+- **Approximates the VALUE FUNCTION**
+- Optimizes the current step's cost
+
+TODO
+
+
+
+
+- Curvature of dynamics
+  - full newton
+- not just cost
+- dynamics hessian so expensive
+
 
 
 
@@ -149,27 +196,15 @@ chance-constrained trajectory opt, covariance steering, reachability analysis
 
 
 
-# DDP
-- Curvature of dynamics
-  - full newton
-- not just cost
-- dynamics hessian so expensive
-
-# LQR
-- Gauss-newton (drops curvature)
-
-## Derivation
-
-## iLQR
+indirect/direct methods, cost functions, LQR/iLQR/DDP, constrained optimization (penalty/barrier/augmented Lagrangian/SQP)
 
 
 
-# Optimization
+<!-- # LQR
+- Gauss-newton (drops curvature) -->
 
-- Indirect methods
-  - Pontryagin's Minimum Principle
-  - necesary conditions for optimality
-- Direct methods
-  - discretize THEN optimize
-  - shooting, collocation
-- Cost functions
+
+
+<!-- # Strategies for optimization -->
+
+<!-- - iLQR works when close to an optimal one -->
