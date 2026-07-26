@@ -11,6 +11,8 @@
     - ![alt text](image-10.png)
 ## Transfer Function
   - Linear
+  - Transformed via LAPLACE TRANSFORM
+    - [Table of transformations](#appendix)
   - How a system responds (gain, phase) to different frequencies
   - Multiplication is convolution in time domain
   - ![alt text](image-2.png)
@@ -135,18 +137,27 @@ Key note: **hitting a gain of -1 ($\pm180\degree$) is bad and makes things flip 
 - **Phase margin** - When exactly at a magnitude of 1, how much extra phase can I tolerate before I risk hitting $\pm 180\degree$ and becoming unstable (by being at $-1 + 0j$)
   - That is, if 
 - **Bandwidth** - Magnitude when system responds at half power
-  - Higher bandwidth freq means faster rise time ()
+  - Higher bandwidth freq means faster rise time
+  - Defines the point at which it "no longer follows the reference" and is more affected by noise (at the "ideal" corner frequency)
 - Max phase added when pole and zero are FAR apart for lead and lag
 - Strategy
   - High margins
-    - Low gain margin
-  - High bandwidth
-    - Allows system to react to higher and higher reference frequencies
+    - To deal with the literal definition of instability with poles
   - High gain at low freq
     - References mainly live here so we want the system to respond quickly to them
     - tracking/disturbance rejection
+  - High bandwidth freq
+    - Allows system to react to higher and higher reference frequencies 
+    -  But also more sensitivity to noise
   - Close to -20dB slope at (gain) crossover freq
+    - Means one pole dominates, so -90 phase lag which is good for phase margin
 
+### Nyquist Plots
+- Maps right hand (unstable) plane encirclement (of where the unstable poles are) to some other locus
+- Encirclement cancels out an unstable pole
+  - Counter-clockwise good
+- Helps with stability
+- Also shows margins with $-1 + 0j$
 
 
 ## Controllers
@@ -178,8 +189,6 @@ Key note: **hitting a gain of -1 ($\pm180\degree$) is bad and makes things flip 
 
 ### PID controller
 
-- **Step**
-
 ### PID
 
 - $P$
@@ -194,10 +203,70 @@ Key note: **hitting a gain of -1 ($\pm180\degree$) is bad and makes things flip 
   - Rejects steady state error
 
 
+# Classical Controls - (with State Space)
+- Also what advanced feedback controller design (AA 212) goes into
+- not just SISO
+
+![alt text](image-15.png)
+![alt text](image-19.png)
+
+### Solution
+![alt text](image-18.png)
+
+### With TF
+
+- **Controller Canonical Form**
+  - Can have different state space representations for same system
+  - ![alt text](image-17.png)
+  - ![alt text](image-16.png)
+
+## Stability
+- Internally
+  - Bounded for all initial states
+- Asymptotically
+  - Internally stable AND has steady state decay to 0
+  - If real parts <0
+- Exponentially
+  - Every solution bounded by decaying exponential (so also asymptotically)
+- BIBO stable
+  - All inputs give bounded output
+  - Unobservable means it really doesn't matter
+  - Uncontrollable means we can't do anything about it even if ideally it starts at 0 (since we are testing the effects of INPUT)
+
+## Controllability
+TODO: better images
+
+- Must be full rank matrix
+  - ![alt text](image-20.png)
+- Can drive poles to anywhere (with desired characteristic polynomial)
+
+### Controller Canonical Form Pole Placement
+TODO: from 212
+
+
+## Observability
+Now have estimate of state
+- Must be full rank
+  - ![alt text](image-24.png)
+- Observation of state converges on real state (with desired characteristic polynomial)
+
+
+### Luenberger Observer
+- Observer has its own dynamics based on measurement error from incorrect estimate
+  - ![alt text](image-25.png)
+  - ![alt text](image-27.png)
+- As long as stable, it converges
+  - ![alt text](image-26.png)
+
+## **Separation principle**
+- Can separate controllability and observability design
+  - ONLY for linear systems
+  - Means I can make a diagonal uncoupled matrix
+
 
 
 - **PID**: u = Kp·e + Ki∫e dt + Kd·de/dt. Know what each term physically does (P = current error, I = eliminates steady-state error but risks windup, D = damps oscillation but amplifies noise). Integral windup and anti-windup (clamping, back-calculation) is a common follow-up question.
-- **State-space controllability**: dual concept to observability — can you drive the state anywhere using available inputs? Controllability matrix [B, AB, A²B, ...] rank test. If uncontrollable, no amount of feedback gain fixes it, the mode just isn't reachable.
+
 - **Pole placement**: choose feedback gain K such that eigenvalues of (A − BK) land at desired locations (Ackermann's formula for SISO). Direct but doesn't optimize any cost, just places poles wherever you ask.
 
 
