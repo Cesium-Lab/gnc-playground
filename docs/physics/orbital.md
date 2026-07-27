@@ -137,8 +137,9 @@ With Moon Orbit
 - ASSUMPTIONS
   - Circular orbit
     1. $r << r_t$ aka distance from the target is much less than the target's orbital radius (duh)
-    2. $\omega = 0$ cancels out Euler term in rotating acceleration
-    3. $\omega \perp r$ so no $sin$ term appears in the Coriolis term
+    2. $
+ 1. $\dot{\omega} = 0$ cancels out Euler term in rotating acceleration
+    1. $\omega \perp r$ so no $sin$ term appears in the Coriolis term. Kinda? idk
 ![alt text](image-19.png)
 ![alt text](image-21.png)
 ![alt text](image-22.png)

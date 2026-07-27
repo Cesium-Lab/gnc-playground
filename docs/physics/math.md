@@ -5,6 +5,17 @@ TODO: all
 
 TODO
 
+
+# Matrix Exponential
+![alt text](image-26.png)
+![alt text](image-27.png)
+
+## Cayley Hamilton Polynomial reduction
+
+![alt text](image-29.png)
+
+
+
 # Decompositions
 
 ## Cholesky
